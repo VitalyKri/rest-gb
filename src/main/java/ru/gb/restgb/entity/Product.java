@@ -33,6 +33,11 @@ public class Product {
     @Column(name = "manufacture_date")
     private LocalDate date;
 
+
+    @ManyToOne
+    @JoinColumn(name = "manufacturer_id")
+    private Manufacturer manufacturer;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;

@@ -5,6 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.gb.restgb.dto.CartDto;
+import ru.gb.restgb.dto.ProductDto;
+import ru.gb.restgb.dto.mapper.ProductMapper;
 import ru.gb.restgb.entity.Cart;
 import ru.gb.restgb.entity.Product;
 import ru.gb.restgb.service.CartService;
@@ -22,6 +25,7 @@ public class CartController {
     private final ProductService productService;
 
 
+
     @GetMapping
     public List<Cart> findAll() {
 
@@ -33,13 +37,12 @@ public class CartController {
     @GetMapping("/addProduct/{productId}")
     public ResponseEntity<?> addProduct(@PathVariable("productId") Long id) {
 
-        Cart cart = cartService.findById(1L);
-
-        Product product = productService.findById(id);
-        if (product == null){
+        CartDto cart = cartService.findById(1L);
+        ProductDto productDto = productService.findById(id);
+        if (productDto == null){
             return new ResponseEntity<>("Не найден продукт",HttpStatus.NOT_FOUND);
         }
-        if(cart.addProduct(product)){
+        if(cart.addProduct(productDto)){
             cartService.save(cart);
             return new ResponseEntity<>("Продукт добавлен",HttpStatus.OK);
         }
@@ -52,14 +55,14 @@ public class CartController {
     @GetMapping("/deleteProduct/{productId}")
     public ResponseEntity<?> deleteProduct(@PathVariable("productId") Long id) {
 
-        Cart cart = cartService.findById(1L);
+        CartDto cartDto = cartService.findById(1L);
 
-        Product product = productService.findById(id);
-        if (product == null){
+        ProductDto productDto = productService.findById(id);
+        if (productDto == null){
             return new ResponseEntity<>("Не найден продукт",HttpStatus.NOT_FOUND);
         }
-        if(cart.deleteProduct(product)){
-            cartService.save(cart);
+        if(cartDto.deleteProduct(productDto)){
+            cartService.save(cartDto);
             return new ResponseEntity<>("Продукт удален",HttpStatus.OK);
         }
         return new ResponseEntity<>("Не получилось удалить продукт",HttpStatus.NOT_FOUND);

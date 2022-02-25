@@ -9,11 +9,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.gb.restgb.dao.CartDao;
+import ru.gb.restgb.dto.CartDto;
+import ru.gb.restgb.dto.mapper.CartMapper;
 import ru.gb.restgb.entity.Cart;
 import ru.gb.restgb.entity.enums.Status;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,22 +24,24 @@ import java.util.Optional;
 public class CartService {
 
     private final CartDao cartDao;
+    private final CartMapper cartMapper;
 
-    public Cart save(Cart cart) {
+    public CartDto save(CartDto cartDto) {
+        Cart cart = cartMapper.toCart(cartDto);
         if (cart.getId() != null) {
             Optional<Cart> productFromDbOptional = cartDao.findById(cart.getId());
             if (productFromDbOptional.isPresent()) {
                 Cart cartFromDb = productFromDbOptional.get();
                 cartFromDb.setStatus(cart.getStatus());
-                return cartDao.save(cartFromDb);
             }
         }
-        return cartDao.save(cart);
+        return cartMapper.toCartDto(cartDao.save(cart));
     }
 
     @Transactional(readOnly = true)
-    public Cart findById(Long id) {
-        return cartDao.findById(id).orElse(null);
+    public CartDto findById(Long id) {
+        return cartMapper.toCartDto(
+                cartDao.findById(id).orElse(null));
     }
 
     @Transactional(readOnly = true)
@@ -55,6 +60,8 @@ public class CartService {
 
 
 
+
+
     public void disableById(Long id) {
         cartDao.findById(id).ifPresent(
                 p -> {
@@ -64,21 +71,32 @@ public class CartService {
         );
     }
 
-    public List<Cart> findAllActive() {
-        return cartDao.findAllByStatus(Status.ACTIVE);
+    public List<CartDto> findAllActive() {
+        return cartDao.findAllByStatus(Status.ACTIVE).stream()
+                .map(cartMapper::toCartDto)
+                .collect(Collectors.toList());
     }
 
 
-    public List<Cart> findAllActive(int page, int size) {
-        return cartDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size));
+    public List<CartDto> findAllActive(int page, int size) {
+        return cartDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size))
+                .stream()
+                .map(cartMapper::toCartDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Cart> findAllActiveSortedById(Sort.Direction direction) {
-        return cartDao.findAllByStatus(Status.ACTIVE, Sort.by(direction, "id"));
+    public List<CartDto> findAllActiveSortedById(Sort.Direction direction) {
+        return cartDao.findAllByStatus(Status.ACTIVE, Sort.by(direction, "id"))
+                .stream()
+                .map(cartMapper::toCartDto)
+                .collect(Collectors.toList());
     }
 
-    public List<Cart> findAllActiveSortedById(int page, int size, Sort.Direction direction) {
-        return cartDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size, Sort.by(direction, "id")));
+    public List<CartDto> findAllActiveSortedById(int page, int size, Sort.Direction direction) {
+        return cartDao.findAllByStatus(Status.ACTIVE, PageRequest.of(page, size, Sort.by(direction, "id")))
+                .stream()
+                .map(cartMapper::toCartDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(propagation = Propagation.NEVER)
@@ -88,5 +106,5 @@ public class CartService {
         return cartDao.count();
     }
 
-    
+
 }

@@ -8,12 +8,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.gb.restgb.dao.ManufacturerDao;
 import ru.gb.restgb.dao.ProductDao;
+import ru.gb.restgb.dto.ProductDto;
+import ru.gb.restgb.dto.ProductManufacturerDto;
+import ru.gb.restgb.dto.mapper.ProductMapper;
 import ru.gb.restgb.entity.Product;
 import ru.gb.restgb.entity.enums.Status;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,30 +26,32 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductDao productDao;
+    private final ManufacturerDao manufacturerDao;
+    private final ProductMapper productMapper;
 
-    public Product save(Product product) {
-        if (product.getId() != null) {
-            Optional<Product> productFromDbOptional = productDao.findById(product.getId());
-            if (productFromDbOptional.isPresent()) {
-                Product productFromDb = productFromDbOptional.get();
-                productFromDb.setTitle(product.getTitle());
-                productFromDb.setDate(product.getDate());
-                productFromDb.setCost(product.getCost());
-                productFromDb.setStatus(product.getStatus());
-                return productDao.save(productFromDb);
-            }
+    @Transactional
+    public ProductDto save(ProductDto productDto) {
+        Product product = productMapper.toProduct(productDto,manufacturerDao);
+        if (product.getId()!=null){
+            productDao.findById(productDto.getId()).ifPresent(
+                    p -> product.setVersion(p.getVersion())
+            );
         }
-        return productDao.save(product);
+        return productMapper.toProductDto(productDao.save(product));
     }
 
     @Transactional(readOnly = true)
-    public Product findById(Long id) {
-        return productDao.findById(id).orElse(null);
+    public ProductDto findById(Long id) {
+        return  productMapper.toProductDto(productDao.findById(id).orElse(null));
     }
 
     @Transactional(readOnly = true)
-    public List<Product> findAll() {
-        return productDao.findAll();
+    public List<ProductDto> findAll() {
+        return productDao.
+                findAll()
+                .stream()
+                .map(productMapper::toProductDto)
+                .collect(Collectors.toList());
     }
 
     public void deleteById(Long id) {
@@ -57,6 +64,11 @@ public class ProductService {
     }
 
 
+    public List<ProductManufacturerDto> findAllInfo(){
+        return productDao.findAll().stream()
+                .map(productMapper::toProductManufacturerDto)
+                .collect(Collectors.toList());
+    }
 
     public void disableById(Long id) {
         productDao.findById(id).ifPresent(
