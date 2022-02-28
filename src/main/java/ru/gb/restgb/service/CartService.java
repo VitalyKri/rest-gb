@@ -38,6 +38,8 @@ public class CartService {
         return cartMapper.toCartDto(cartDao.save(cart));
     }
 
+
+
     @Transactional(readOnly = true)
     public CartDto findById(Long id) {
         return cartMapper.toCartDto(
@@ -45,8 +47,10 @@ public class CartService {
     }
 
     @Transactional(readOnly = true)
-    public List<Cart> findAll() {
-        return cartDao.findAll();
+    public List<CartDto> findAll() {
+        return cartDao.findAll().stream()
+                .map(cartMapper::toCartDto)
+                .collect(Collectors.toList());
     }
 
     public void deleteById(Long id) {

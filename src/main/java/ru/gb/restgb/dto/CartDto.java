@@ -21,7 +21,7 @@ public class CartDto {
     @NotBlank
     private String status;
 
-    private final Set<ProductDto> products = new HashSet<>();
+    private Set<ProductDto> products = new HashSet<>();
 
     public boolean addProduct(ProductDto product){
         return products.add(product);

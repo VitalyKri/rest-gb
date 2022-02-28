@@ -26,10 +26,18 @@ public class CartController {
 
 
 
+
     @GetMapping
-    public List<Cart> findAll() {
+    public List<CartDto> findAll() {
 
         return cartService.findAll();
+
+    }
+
+    @GetMapping("/{id}")
+    public CartDto findById(@PathVariable("id") Long id) {
+
+        return cartService.findById(id);
 
     }
 
