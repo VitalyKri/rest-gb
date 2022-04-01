@@ -1,0 +1,16 @@
+spring.datasource:
+  url: "jdbc:postgresql://localhost:5432/gb_shop"
+  username: "geek"
+  password: "geek"
+
+server:
+  port: 8765
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jpa:
+    show-sql: true
+logging:
+  file:
+    path: '/log'

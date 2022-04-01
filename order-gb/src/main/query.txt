@@ -1,0 +1,22 @@
+
+create table "order_gb"
+(
+    id     bigserial not null
+        constraint order_pk
+            primary key,
+    date   timestamp,
+    client varchar(255)
+);
+
+create table order_product
+(
+    order_id   bigint not null
+        constraint order_product_order_id_fk
+            references "order",
+    product_id bigint
+        constraint order_product_product_id_fk
+            references product,
+    cost       integer,
+    constraint order_product_pk
+        unique (order_id, product_id)
+);
